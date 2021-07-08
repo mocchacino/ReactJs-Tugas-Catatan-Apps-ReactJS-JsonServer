@@ -11,8 +11,56 @@ import {
   Image,
   Pagination,
   Divider,
-  Input
+  Input,
+  Message,
 } from 'semantic-ui-react'
+
+const SearchComponent = (props) =>{
+  return (
+      <Segment.Group>
+          <Input 
+              fluid
+              value={props.value}
+              onChange={props.onChange}
+              placeholder='Cari Judul'
+          />
+      </Segment.Group>
+  )
+}
+
+function MessageSuccess(props){
+  return(
+    <Message positive>
+      <Message.Header>{props.header}</Message.Header>
+      <p>
+        {props.content}
+      </p>
+    </Message>
+  )
+}
+
+function MessageDelete(props){
+  return(
+    <Message negative>
+      <Message.Header>{props.header}</Message.Header>
+      <p>
+        {props.content}
+      </p>
+    </Message>
+  )
+}
+
+const MsgSuccess={
+  header: "Sukses!",
+  content:"Catatan penting kamu sudah kami simpan."
+}
+
+const MsgDelete={
+  header: "Sukses!",
+  content:"Catatan penting kamu sudah kami hapus."
+}
+
+
 
 class App extends Component{
   constructor(props){
@@ -32,6 +80,8 @@ class App extends Component{
       showHideEdit: false,
       showCreate: false,
       page:2,
+      success:false,
+      delete:false
     }
     this.handleRemove=this.handleRemove.bind(this)
     this.inputChange=this.inputChange.bind(this)
@@ -39,19 +89,16 @@ class App extends Component{
     this.hideComponent=this.hideComponent.bind(this)
     this.showCreate=this.showCreate.bind(this)
     this.clearData=this.clearData.bind(this)
+    this.handleChange = this.handleChange.bind(this);
   }
 
-
-
-  
-    
-  
-
   handleRemove(e){
-    console.log(e.target.value)
+    this.setState({delete:true})
+    console.log(this.state.delete)
     fetch(`http://localhost:3004/list-catatan/${e.target.value}`, {
       method:"DELETE"
     }).then(res => this.reloadData())
+    
   }
 
   reloadData(){
@@ -97,9 +144,11 @@ class App extends Component{
     () => console.log(this.state.dataPost))
   }
 
-  handleChange = event => {
-    this.setState({ filter: event.target.value });
-    this.state.page = 1;
+  handleChange(event){
+    this.setState({ 
+      filter: event.target.value, 
+      page : 1 
+    });
   };
 
   onSubmitForm(){
@@ -111,6 +160,8 @@ class App extends Component{
           this.clearData()
         }
       )
+      
+      this.setState({success:true});
     }else{
       axios
       .put(`http://localhost:3004/list-catatan/${this.state.dataPost.id}`, this.state.dataPost)
@@ -119,6 +170,7 @@ class App extends Component{
           this.clearData()
         }
       )
+      this.setState({success:true});
     }
   }
 
@@ -132,8 +184,7 @@ class App extends Component{
       })
     )
     if((this.state.showHideView) || (this.state.showCreate)){
-      this.setState({showHideView: false});
-      this.setState({showCreate: false});
+      this.setState({showHideView: false, showCreate: false, success:false, delete:false});
     }
     this.setState({showHideEdit: !this.state.showHideEdit});
   }
@@ -148,16 +199,14 @@ class App extends Component{
       })
     )
     if((this.state.showHideEdit) || (this.state.showCreate)){
-      this.setState({showHideEdit: false});
-      this.setState({showCreate: false});
+      this.setState({showHideEdit: false, showCreate: false, success:false, delete:false});
     }
     this.setState({showHideView: !this.state.showHideView});
   }
 
   showCreate(){
     if((this.state.showHideEdit) || (this.state.showHideView)){
-      this.setState({showHideEdit: false});
-      this.setState({showHideView: false});
+      this.setState({showHideEdit: false, showHideView: false, success:false, delete:false});
     }
     this.clearData()
     this.setState({showCreate: !this.state.showCreate});
@@ -174,19 +223,12 @@ class App extends Component{
     this.reloadData()
     
   }
-
-  // getLength(){
-  //   let data = axios
-  //   .get(`http://localhost:3004/list-catatan/`);
-  //   var count = Object.keys(data).length;
-  //   console.log (count);
-  // }
   
   
   setPageNum = (event, { activePage }) => {
     this.setState({ page: activePage });
   };
-  
+   
 
   render(){
     const { showHideView, showHideEdit, showCreate } = this.state;
@@ -205,7 +247,8 @@ class App extends Component{
       (page - 1) * itemsPerPage + itemsPerPage
     );
    
-    console.log(items );
+      
+
     return(
       <div>
         <Grid>
@@ -237,15 +280,10 @@ class App extends Component{
             <Grid.Column width={14}>
               <Segment.Group>
                 <Segment as='h5'>Catatan</Segment>
-                <Segment.Group>
-                  <Input 
-                      fluid
-                      value={filter}
-                      onChange={this.handleChange}
-                      placeholder='Cari Judul'
-                    />
-                  
-                </Segment.Group>
+                <SearchComponent 
+                    value={filter}
+                    onChange={this.handleChange}
+                />
                 <Segment.Group>
                   <Segment>
                     <Table celled striped>
@@ -268,6 +306,7 @@ class App extends Component{
                               <Button value={catatan.id} onClick={this.hideComponent} color='green'>View</Button>
                               <Button value={catatan.id} onClick={this.getDataId} color='blue'>Edit</Button>
                               <Button value={catatan.id} onClick={this.handleRemove} color='red'>Delete</Button>
+                              
                             </Table.Cell>
                           </Table.Row>
                         )
@@ -291,6 +330,7 @@ class App extends Component{
                   
                   <Segment>
                     <Form>
+                      {this.state.delete && <MessageDelete header={MsgDelete.header} content={MsgDelete.content} />}
                       {showHideView && (
                         <div>
                           <Segment>
@@ -305,6 +345,7 @@ class App extends Component{
                       )}
                       {showHideEdit && (
                         <div>
+                          {this.state.success && <MessageSuccess header={MsgSuccess.header} content={MsgSuccess.content} />}
                           <Form.Group>
                             <Form.Input fluid label='Judul' type='text' name='judul' placeholder='Masukkan Judul' value={this.state.dataPost.judul} onChange={this.inputChange} width={16}/>
                           </Form.Group>
@@ -316,6 +357,7 @@ class App extends Component{
                       )}
                       {showCreate && (
                         <div>
+                          {this.state.success && <MessageSuccess header={MsgSuccess.header} content={MsgSuccess.content} />}
                           <Form.Group>
                             <Form.Input fluid label='Judul' type='text' name='judul' placeholder='Masukkan Judul' value={this.state.dataPost.judul} onChange={this.inputChange} width={16}/>
                           </Form.Group>
