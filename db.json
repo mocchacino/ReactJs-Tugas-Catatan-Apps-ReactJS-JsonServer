@@ -1,0 +1,46 @@
+{
+  "list-catatan": [
+    {
+      "id": 1537298993816,
+      "judul": "wila",
+      "isi": "beli makan",
+      "date": "2021 - 07 - 7"
+    },
+    {
+      "id": 1625642465981,
+      "judul": "fauzanil",
+      "isi": "kerja siang ini",
+      "date": "2021 - 07 - 7"
+    },
+    {
+      "id": 1625644244450,
+      "judul": "satria F",
+      "isi": "motor",
+      "date": "2021 - 07 - 7"
+    },
+    {
+      "id": 1625652016024,
+      "judul": "kamu",
+      "isi": "asu",
+      "date": "2021 - 07 - 7"
+    },
+    {
+      "id": 1625655025642,
+      "judul": "daftar belanjaan",
+      "isi": "susu\nberas\nsabun",
+      "date": "2021 - 07 - 7"
+    },
+    {
+      "id": 1625655049381,
+      "judul": "daftar makanan",
+      "isi": "sate\nsoto\nmie\n",
+      "date": "2021 - 07 - 7"
+    },
+    {
+      "id": 1625662912651,
+      "judul": "daftar minuman",
+      "isi": "sprite\nteh\nsusu",
+      "date": "2021 - 07 - 7"
+    }
+  ]
+}
