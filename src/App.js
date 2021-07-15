@@ -1,4 +1,4 @@
-import React, {Component, useState} from "react";
+import React, {Component} from "react";
 import axios from 'axios'
 import 'semantic-ui-css/semantic.min.css'
 import {
@@ -79,7 +79,7 @@ class App extends Component{
       showHideView: false,
       showHideEdit: false,
       showCreate: false,
-      page:2,
+      page:1,
       success:false,
       delete:false
     }
@@ -92,15 +92,21 @@ class App extends Component{
     this.handleChange = this.handleChange.bind(this);
   }
 
+
+  // FUNGSI DELETE
+  // mengubah state delete menjadi true, yang akan digunakan untuk menampilkan msg
+  // fetch request dengan metode delete
+  // selanjutnya jika suces akan menjalankan realoadData 
   handleRemove(e){
     this.setState({delete:true})
-    console.log(this.state.delete)
     fetch(`http://localhost:3004/list-catatan/${e.target.value}`, {
       method:"DELETE"
     }).then(res => this.reloadData())
     
   }
 
+  // membuat request dengan metode get ke url
+  // saat berhasil akan mengubah state dataApi menjadi data respon
   reloadData(){
     axios.get('http://localhost:3004/list-catatan').then(
       res => {
@@ -123,7 +129,8 @@ class App extends Component{
   }
 
   inputChange(e, {name, value}){
-    this.setState({ value })
+    // this.setState({ value })
+    // mengambil seluruh properti dati dataPost ke variabel newwdatapost
     let newdataPost = {...this.state.dataPost}
     let separator = " - "
     let newDate = new Date()
@@ -132,12 +139,15 @@ class App extends Component{
     let year = newDate.getFullYear();
 
     if(this.state.edit === false){
+      // id berisikan milisecond dari 1 januari 1970 sampai sekarang
       newdataPost['id'] = new Date().getTime()
+      // mengisi date menjadi format yyyy-mm-dd
       newdataPost['date'] = `${year}${separator}${month<10?`0${month}`:`${month}`}${separator}${date}`
     }
-    // newdataPost[e.target.name] = e.target.value
+    // mengisikan properti newdatapost dengan value
     newdataPost[name] = value
 
+    // mengubah properti datapost 
     this.setState({
       dataPost : newdataPost
     }, 
@@ -151,8 +161,15 @@ class App extends Component{
     });
   };
 
+  componentDidMount(){
+    this.reloadData()
+  }
+
   onSubmitForm(){
+    // jika membuat data baru
     if(this.state.edit === false){
+      // membuat request dengan metode post ke url 
+      // jika berhasil akan mereload dan memberishkan Form
       axios
       .post(`http://localhost:3004/list-catatan`, this.state.dataPost)
       .then ( () => {
@@ -160,9 +177,10 @@ class App extends Component{
           this.clearData()
         }
       )
-      
+      // state yg digunakan sebagai tanda untuk menampilkan pesan
       this.setState({success:true});
     }else{
+      // membuat request dengan metode put ke url
       axios
       .put(`http://localhost:3004/list-catatan/${this.state.dataPost.id}`, this.state.dataPost)
       .then ( () => {
@@ -175,6 +193,9 @@ class App extends Component{
   }
 
   getDataId = (e) =>{
+    // axios mengirim det request ke url
+    // hasil respon tersebut disimpan ke variabel res
+    // mengubah state datapost dengan Response, state edit dengan true
     axios
     .get(`http://localhost:3004/list-catatan/${e.target.value}`)
     .then(res => 
@@ -183,10 +204,11 @@ class App extends Component{
         edit: true
       })
     )
+    // mengubah state untuk menampilkkan segment/form
     if((this.state.showHideView) || (this.state.showCreate)){
       this.setState({showHideView: false, showCreate: false, success:false, delete:false});
     }
-    this.setState({showHideEdit: !this.state.showHideEdit});
+    this.setState({showHideEdit: true});
   }
 
   hideComponent = (e) =>{
@@ -201,7 +223,7 @@ class App extends Component{
     if((this.state.showHideEdit) || (this.state.showCreate)){
       this.setState({showHideEdit: false, showCreate: false, success:false, delete:false});
     }
-    this.setState({showHideView: !this.state.showHideView});
+    this.setState({showHideView: true});
   }
 
   showCreate(){
@@ -211,18 +233,6 @@ class App extends Component{
     this.clearData()
     this.setState({showCreate: !this.state.showCreate});
   }
-
-  componentDidMount(){
-    // fetch('https://jsonplaceholder.typicode.com/todos/1')
-    //   .then(response => response.json())
-    //   .then(res => {
-    //     this.setState({
-    //       dataApi:res
-    //     })
-    //   })
-    this.reloadData()
-    
-  }
   
   
   setPageNum = (event, { activePage }) => {
@@ -231,23 +241,23 @@ class App extends Component{
    
 
   render(){
-    const { showHideView, showHideEdit, showCreate } = this.state;
-    const { filter } = this.state;
+    const { showHideView, showHideEdit, showCreate, filter } = this.state;
+    // untuk mendapatkan data yang match dengan keyword
+    // keyword dan data yg tersedia diubah menjadi lower cased
+    // selanjutnya digunakan fungsi filter
     const lowercasedFilter = filter.toLowerCase();
     const filteredData = this.state.dataApi.filter(catatan => {
       return catatan.judul.toLowerCase().includes(lowercasedFilter)
     });
     
     const itemsPerPage = 3;
-    const totalPages = (Object.keys(filteredData).length)/itemsPerPage;
+    const totalPages = Math.ceil((Object.keys(filteredData).length)/itemsPerPage);
     const { page } = this.state;
     
     const items  = filteredData.slice(
       (page - 1) * itemsPerPage,
       (page - 1) * itemsPerPage + itemsPerPage
     );
-   
-      
 
     return(
       <div>
@@ -306,7 +316,6 @@ class App extends Component{
                               <Button value={catatan.id} onClick={this.hideComponent} color='green'>View</Button>
                               <Button value={catatan.id} onClick={this.getDataId} color='blue'>Edit</Button>
                               <Button value={catatan.id} onClick={this.handleRemove} color='red'>Delete</Button>
-                              
                             </Table.Cell>
                           </Table.Row>
                         )
@@ -335,10 +344,10 @@ class App extends Component{
                         <div>
                           <Segment>
                             <Header as='h3' floated='left'>
-                              {this.state.dataPost.judul}
+                              <p>{this.state.dataPost.judul}</p>
                             </Header>
                             <Divider clearing />
-                              {this.state.dataPost.isi}
+                              <p>{this.state.dataPost.isi}</p>
                           </Segment>
                          
                         </div>
